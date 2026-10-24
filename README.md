@@ -13,7 +13,8 @@
 | --- | --- |
 | `src/rtsp_push.c` | 板上推流。从本机 RTSP 拉一路，ANNOUNCE/RECORD 推到远端，不重新编码，断开 3 秒后重连。支持 Basic 和 Digest 鉴权。 |
 | `src/i2c_flip.c` | 画面上下翻转。直接写 SC4336P 寄存器 `0x3221=0x60`。 |
-| `board/start.sh` | 重启后依次拉起 WiFi、编码、翻转、推流。 |
+| `board/start.sh` | 依次拉起 WiFi、编码、翻转、推流。板上路径 `/youyan/start.sh`。 |
+| `board/S95camera` | 开机自启。板上路径 `/etc/init.d/S95camera`，在厂家 `S90autorun` 加载驱动之后后台执行 `start.sh`。 |
 | `board/push.conf.example` | 推流地址模板。复制成板上的 `/youyan/push.conf`，填好密码。 |
 | `board/insmod.sh` | 板上 `/youyan/insmod.sh`，MMZ 改为 `0x44000000` 起 64M。 |
 | `host/tftp_once.py` | 电脑上的一次性 TFTP 服务，给板子传文件。 |

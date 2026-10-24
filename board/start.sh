@@ -4,11 +4,13 @@
 BIN=/youyan
 CONF=$BIN/push.conf
 
+echo "start $(date)"
 if ! ifconfig wlan0 2>/dev/null | grep -q 'inet addr'; then
     rmmod rtl8189fs 2>/dev/null
     insmod /system/wifi/ko/rtl8189fs.ko
     /system/wifi/wifi_start.sh RTL8189FS
 fi
+ifconfig wlan0 | grep 'inet addr'
 
 # sample_venc 会在当前目录写码流文件，指到 /dev/null 免得写满 flash。
 mkdir -p /tmp/vlog
@@ -29,3 +31,4 @@ fi
 . "$CONF"
 killall rtsp_push 2>/dev/null
 setsid $BIN/rtsp_push rtsp://127.0.0.1:554/live.h265 "$PUSH_URL" >/tmp/push.log 2>&1 &
+echo "push started"
