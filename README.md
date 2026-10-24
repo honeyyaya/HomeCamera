@@ -15,6 +15,7 @@
 | `src/i2c_flip.c` | 画面上下翻转。直接写 SC4336P 寄存器 `0x3221=0x60`。 |
 | `board/start.sh` | 依次拉起 WiFi、编码、翻转、推流。板上路径 `/youyan/start.sh`。 |
 | `board/S95camera` | 开机自启。板上路径 `/etc/init.d/S95camera`，在厂家 `S90autorun` 加载驱动之后后台执行 `start.sh`。 |
+| `board/hclog.sh` | 状态记录，板上路径 `/youyan/hclog.sh`，由 `S95camera` 拉起。每 30 秒往 flash 写一行，断电后还在。 |
 | `board/push.conf.example` | 推流地址模板。复制成板上的 `/youyan/push.conf`，填好密码。 |
 | `board/insmod.sh` | 板上 `/youyan/insmod.sh`，MMZ 改为 `0x44000000` 起 64M。 |
 | `host/tftp_once.py` | 电脑上的一次性 TFTP 服务，给板子传文件。 |
@@ -43,9 +44,22 @@ tftp -g -r i2c_flip  -l /youyan/i2c_flip  <电脑IP> 6969
 chmod +x /youyan/rtsp_push /youyan/i2c_flip
 ```
 
-`sample_venc` 也放到 `/youyan/sample_venc`。再把 `board/start.sh` 放到 `/youyan/start.sh`，按模板写好 `/youyan/push.conf`。
+`sample_venc` 也放到 `/youyan/sample_venc`。再把 `board/start.sh` 放到 `/youyan/start.sh`，`board/S95camera` 放到 `/etc/init.d/S95camera`（都要 `chmod 755`），按模板写好 `/youyan/push.conf`。
 
-重启后执行 `sh /youyan/start.sh`。推流日志在 `/tmp/push.log`，出现 `pushing /live.h265 -> ...` 且后面 `fwd N` 持续增长，就是在推。编码日志在 `/tmp/vlog/venc.log`。
+之后插电就会自己推流，开机后大约 30 秒云上就有画面。日志：
+
+- `/tmp/start.log`：自启脚本，WiFi 拿到的地址、翻转是否成功（`n 3` 为成功）。
+- `/tmp/push.log`：出现 `pushing /live.h265 -> ...` 且后面 `fwd N` 持续增长，就是在推。
+- `/tmp/vlog/venc.log`：编码程序。
+- `/youyan/log/hc.log`（超过 256KB 转存为 `hc.log.1`）：每次开机一行 `=== BOOT n ===`，之后每 30 秒一行状态：
+  `ip`、`wifi`（wpa 状态）、`sig`（链路质量/信号）、`gw`/`srv`（能否 ping 通网关和服务器）、`mem`、`load`、`venc`/`push`（进程是否在）、`conn`（推流累计连接次数）、`fwd`。
+  推流日志的新行以 `push:` 开头带进来；出问题时记一行 `!! FAULT`，附上推流日志和 `dmesg` 的末尾，好转后记 `recovered`。
+  联网后用 NTP 对时，对上之前时间是 1970 年，看 `up`（开机秒数）。
+  BOOT 前一行状态还正常、中间没有 FAULT，说明是突然断电或复位，不是软件退出。
+
+注意 `/tmp` 在 flash 上，不是内存盘。
+
+关掉自启：`rm /etc/init.d/S95camera`。
 
 ## 内存划分
 

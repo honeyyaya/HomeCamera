@@ -829,7 +829,7 @@ static int relay(struct conn *src, struct conn *dst, struct track *tracks, int n
                     free(pkt);
                     return -1;
                 }
-                if (++count % 120 == 0) {
+                if (++count % 30000 == 0) {
                     fprintf(stderr, "fwd %d\n", count);
                 }
             } else {

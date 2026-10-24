@@ -1,6 +1,9 @@
 #!/bin/sh
 # 板上路径 /etc/init.d/S95camera。S90autorun 加载完驱动后，在后台拉起推流，不挡住开机。
 # 删掉这个文件即可关闭自启。
+if [ -x /youyan/hclog.sh ]; then
+    setsid /youyan/hclog.sh </dev/null >/dev/null 2>&1 &
+fi
 if [ -x /youyan/start.sh ]; then
     /youyan/start.sh >/tmp/start.log 2>&1 &
 fi
