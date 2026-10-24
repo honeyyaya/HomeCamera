@@ -2,3 +2,4 @@
 *.c text eol=lf
 *.example text eol=lf
 board/S95camera text eol=lf
+board/S50dropbear text eol=lf

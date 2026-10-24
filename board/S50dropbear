@@ -1,0 +1,8 @@
+#!/bin/sh
+# 板上路径 /etc/init.d/S50dropbear。SSH 服务，只认 /root/.ssh/authorized_keys 里的密钥，不收密码。
+# 主机密钥首次启动时生成在 /etc/dropbear。
+DB=/youyan/dropbearmulti
+if [ -x $DB ]; then
+    mkdir -p /etc/dropbear
+    $DB dropbear -R -s -p 22
+fi

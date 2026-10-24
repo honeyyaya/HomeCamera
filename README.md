@@ -16,6 +16,7 @@
 | `board/start.sh` | 依次拉起 WiFi、编码、翻转、推流。板上路径 `/youyan/start.sh`。 |
 | `board/S95camera` | 开机自启。板上路径 `/etc/init.d/S95camera`，在厂家 `S90autorun` 加载驱动之后后台执行 `start.sh`。 |
 | `board/hclog.sh` | 状态记录，板上路径 `/youyan/hclog.sh`，由 `S95camera` 拉起。每 30 秒往 flash 写一行，断电后还在。 |
+| `board/S50dropbear` | SSH 服务，板上路径 `/etc/init.d/S50dropbear`。只认密钥，不收密码。 |
 | `board/push.conf.example` | 推流地址模板。复制成板上的 `/youyan/push.conf`，填好密码。 |
 | `board/insmod.sh` | 板上 `/youyan/insmod.sh`，MMZ 改为 `0x44000000` 起 64M。 |
 | `host/tftp_once.py` | 电脑上的一次性 TFTP 服务，给板子传文件。 |
@@ -60,6 +61,18 @@ chmod +x /youyan/rtsp_push /youyan/i2c_flip
 注意 `/tmp` 在 flash 上，不是内存盘。
 
 关掉自启：`rm /etc/init.d/S95camera`。
+
+## SSH
+
+板上原来没有 SSH，用的是 dropbear 2024.86，静态编译成 `/youyan/dropbearmulti`（`dropbear`、`dropbearkey`、`scp` 合一），`/usr/bin/scp` 链到它。编译参数：
+
+```text
+./configure --host=arm-v01c02-linux-musleabi --disable-zlib --disable-lastlog --disable-utmp \
+  --disable-utmpx --disable-wtmp --disable-wtmpx --disable-pututline --disable-pututxline --enable-static
+make PROGRAMS='dropbear dropbearkey scp' MULTI=1 STATIC=1
+```
+
+电脑公钥放进板上 `/root/.ssh/authorized_keys`（`/root` 和 `.ssh` 要 700，文件 600），之后 `ssh root@<板子IP>`。传文件用 `scp -O`，板上没有 sftp。
 
 ## 内存划分
 
