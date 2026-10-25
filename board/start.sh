@@ -15,10 +15,14 @@ ifconfig wlan0 | grep 'inet addr'
 # sample_venc 会在当前目录写码流文件，指到 /dev/null 免得写满 flash。
 mkdir -p /tmp/vlog
 cd /tmp
-ln -sf /dev/null /tmp/stream_chn0.h265
-ln -sf /dev/null /tmp/stream_chn1.h264
+for f in stream_chn0.h264 stream_chn0.h265 stream_chn1.h264 stream_chn1.h265; do
+    ln -sf /dev/null /tmp/$f
+done
+# 日志用追加方式打开，hclog.sh 截短后写入位置跟着回到末尾，不会留空洞。
+: > /tmp/vlog/venc.log
+: > /tmp/push.log
 # 标准输入要一直开着：回车两次 sample_venc 就会退出。
-setsid sh -c "trap '' HUP; ( printf '0\nc\n'; sleep 999999 ) | $BIN/sample_venc 0 1" </dev/null >/tmp/vlog/venc.log 2>&1 &
+setsid sh -c "trap '' HUP; ( printf '0\nc\n'; sleep 999999 ) | $BIN/sample_venc 0 1" </dev/null >>/tmp/vlog/venc.log 2>&1 &
 
 # 传感器初始化会把翻转寄存器写回 0，要等编码起来后再写。
 sleep 8
@@ -30,5 +34,5 @@ if [ ! -f "$CONF" ]; then
 fi
 . "$CONF"
 killall rtsp_push 2>/dev/null
-setsid $BIN/rtsp_push rtsp://127.0.0.1:554/live.h265 "$PUSH_URL" >/tmp/push.log 2>&1 &
+setsid $BIN/rtsp_push rtsp://127.0.0.1:554/live.h265 "$PUSH_URL" >>/tmp/push.log 2>&1 &
 echo "push started"
